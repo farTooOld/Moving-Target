@@ -1,0 +1,313 @@
+/* APPLICATION: My Sevo for Moving Target2 revised original for pcb
+           Rev: 0
+          Date: 10-5-17
+   COMMENTS:  Works great...  48 and 142 are the limits for my target to pass the
+   hiding curtain / opening
+*/
+// *************************************************************************************
+// *                           ***** DECLARATIONS *****                                *
+// *************************************************************************************
+//#include <LiquidCrystal.h>
+#include <avr/io.h>
+#include <util/delay.h>
+#include <Servo.h>
+
+volatile int pos          = 90;
+volatile int waitTime     = 15;
+int slow                  = 30;
+int medium                = 40;
+int fast                  = 16;
+int hop                   = 15;
+
+const short  btnBullsEye  = 14;           // A0 thru A4 analog pins to digital pins
+const short  btnSquirrel  = 15;           // A1
+const short  btnWabbit    = 16;           // A2
+const short  btnDelta     = 17;           // A3
+const short  btnPaused    = 18;           // A4
+
+const short bull_LED      = 9;
+const short sqrl_LED      = 8;
+const short wabbit_LED    = 7;
+const short servoPin      = 5;
+
+Servo  myservo1;                            // declare the servo
+
+void setup() {
+
+  pinMode(btnPaused, INPUT_PULLUP);
+  pinMode(btnBullsEye,INPUT_PULLUP);
+  pinMode(btnSquirrel, INPUT_PULLUP);
+  pinMode(btnWabbit, INPUT_PULLUP);
+  pinMode(btnDelta, INPUT_PULLUP);
+
+  digitalWrite(btnPaused, HIGH);            // set
+  digitalWrite(btnBullsEye, HIGH);
+  digitalWrite(btnSquirrel, HIGH);
+  digitalWrite(btnWabbit, HIGH);
+  digitalWrite(btnDelta, HIGH);
+
+  pinMode(9, OUTPUT);
+  pinMode(8, OUTPUT);
+  pinMode(7, OUTPUT);
+
+  digitalWrite(bull_LED, LOW);
+  digitalWrite(sqrl_LED, LOW);
+  digitalWrite(wabbit_LED, LOW);
+  digitalWrite(13, LOW);                    // nano LED off
+      
+}//end setup
+
+// *************************************************************************************
+// *                          ***** While LOOP *****                                   *
+// *************************************************************************************
+void loop() {
+
+  //PAUSED:
+  if ( digitalRead(btnPaused) == LOW ) {
+    debounce();
+    Paused();
+  }
+  //BULL:
+  if ( digitalRead(btnBullsEye) == LOW ) {
+    debounce();
+    waitTime = medium;
+    Bull();
+  }
+  //SQUIRREL:
+  if ( digitalRead(btnSquirrel) == LOW ) {
+    debounce();
+    waitTime = random(400, 2500);
+    Squirrel ();
+  }
+  //WABBIT:
+  if ( digitalRead(btnWabbit) == LOW ) {
+    debounce();
+    waitTime = 1500;
+    Wabbit();
+  }
+
+}//end loop
+
+// *************************************************************************************
+// *                              ***** SUBROUTINES *****                              *
+// *************************************************************************************
+
+void debounce() {
+  delay(1);
+}//end debounce
+// *************************************************************************************
+
+void Bull() {
+  if ( digitalRead(btnBullsEye) == LOW ) {
+    debounce();
+    myservo1.attach(servoPin);
+
+      digitalWrite(bull_LED, HIGH);
+      digitalWrite(sqrl_LED, LOW);
+      digitalWrite(wabbit_LED, LOW);
+      
+    waitTime = medium;
+    while ( 1) {
+      for (pos = 48; pos <= 142; pos += 1) {       // go from 48 degrees to 142 degrees
+        if ( digitalRead(btnBullsEye) == LOW ) {   // for resetting waitTime to default
+          debounce();
+          waitTime = medium;
+        }
+        if ( digitalRead(btnSquirrel) == LOW ) {
+          debounce();
+          waitTime = random(1400, 2500);
+          Squirrel();
+        }
+        if ( digitalRead(btnWabbit) == LOW ) {
+          debounce();
+          waitTime = 2000;
+          Wabbit();
+        }
+        if ( digitalRead(btnPaused) == LOW ) {
+          debounce();
+          Paused();
+        }
+        if ( digitalRead(btnDelta) == LOW) {
+          debounce();
+          waitTime = fast;
+        }
+        myservo1.write(pos);                        // go to position
+        delay(waitTime);                            // wait to reach the position
+      }
+      for (pos = 142; pos >= 48; pos -= 1) {        // go from 142 degrees to 48 degrees
+        if ( digitalRead(btnBullsEye) == LOW ) {    // for resetting waitTime to default
+          debounce();
+          waitTime = medium;
+        }
+        if ( digitalRead(btnSquirrel) == LOW ) {
+          debounce();
+          waitTime = random(400, 2500);
+          Squirrel();
+        }
+        if ( digitalRead(btnWabbit) == LOW ) {
+          debounce();
+          waitTime = 2000;
+          Wabbit();
+        }
+        if ( digitalRead(btnPaused) == LOW ) {
+          debounce();
+          Paused();
+        }
+        if (digitalRead(btnDelta) == LOW) {
+          debounce();
+          waitTime = fast;
+        }
+        myservo1.write(pos);                         // go to position
+        delay(waitTime);                             // wait to reach the position
+      }
+    }//end while
+  }//end bullread
+}//end bull sub
+// *************************************************************************************
+
+void Squirrel () {
+  if ( digitalRead(btnSquirrel) == LOW ) {
+    debounce();
+    myservo1.attach(servoPin);
+
+      digitalWrite(bull_LED, LOW);
+      digitalWrite(sqrl_LED, HIGH);
+      digitalWrite(wabbit_LED, LOW);
+    waitTime = random(1400, 2500);
+
+    while (1) {
+      pos = random(48, 142 );
+      myservo1.write(pos);
+      delay(waitTime);
+      delay(random(30, 100));
+
+      if ( digitalRead(btnSquirrel) == LOW ) {     // for resetting waitTime to default
+        debounce();
+        waitTime = random(1400, 2500);
+      }
+      if ( digitalRead(btnBullsEye) == LOW ) {
+        debounce();
+        waitTime = medium;
+        Bull();
+      }
+      if ( digitalRead(btnWabbit) == LOW ) {
+        debounce();
+        waitTime = 2000;
+        Wabbit();
+      }
+      if ( digitalRead(btnPaused) == LOW ) {
+        debounce();
+        Paused();
+      }
+      if (digitalRead(btnDelta) == LOW) {
+        debounce();
+        waitTime = random(600, 1200);
+      }
+    }//end while
+  }//end squirrelread
+}//end squirrel sub
+// *************************************************************************************
+
+void Wabbit () {
+  if ( digitalRead(btnWabbit) == LOW ) {
+    debounce();
+    myservo1.attach(servoPin);
+
+      digitalWrite(bull_LED, LOW);
+      digitalWrite(sqrl_LED, LOW);
+      digitalWrite(wabbit_LED, HIGH);
+    waitTime = 2000;
+    while (1) {
+      for (pos = 48; pos <= 142; pos += hop) {      // go from 48 degrees to 142 degrees
+        if ( digitalRead(btnWabbit) == LOW ) {      // for resetting waitTime to default
+          debounce();
+          waitTime = 2000;
+        }
+        if ( digitalRead(btnSquirrel) == LOW ) {
+          debounce();
+          waitTime = random(1400, 2500);
+          Squirrel();
+        }
+        if ( digitalRead(btnBullsEye) == LOW ) {
+          debounce();
+          waitTime = medium;
+          Bull();
+        }
+        if ( digitalRead(btnPaused) == LOW ) {
+          debounce();
+          Paused();
+        }
+        if (digitalRead(btnDelta) == LOW) {
+          debounce();
+          waitTime = 1200;
+        }
+        myservo1.write(pos);                        // go to position
+        delay(waitTime);                            // wait to reach the position
+      }
+      for (pos = 142; pos >= 48; pos -= hop) {      // go from 142 degrees to 48 degrees
+        if ( digitalRead(btnWabbit) == LOW ) {      // for resetting waitTime to default
+          debounce();
+          waitTime = 2000;
+        }
+        if ( digitalRead(btnSquirrel) == LOW ) {
+          debounce();
+          waitTime = random(1400, 2500);
+          Squirrel();
+        }
+        if ( digitalRead(btnBullsEye) == LOW ) {
+          debounce();
+          waitTime = medium;
+          Bull();
+        }
+        if ( digitalRead(btnPaused) == LOW ) {
+          debounce();
+          Paused();
+        }
+        if (digitalRead(btnDelta) == LOW) {
+          debounce();
+          waitTime = 1200;;
+        }
+        myservo1.write(pos);                            // go to position
+        delay(waitTime);                                // wait to reach the position
+      }
+    }//end while
+  }//end wabbitread
+}//end wabbit sub
+// *************************************************************************************
+
+void Paused() {
+
+  while (1) {
+    if ( digitalRead(btnPaused) == LOW ) {
+      debounce();
+      myservo1.attach(servoPin);
+    }
+    if ( digitalRead(btnBullsEye) == LOW ) {
+      debounce();
+      waitTime = medium;
+      Bull();
+    }
+    if ( digitalRead(btnSquirrel) == LOW ) {
+      debounce();
+      waitTime = random(1400, 2500);
+      Squirrel();
+    }
+    if ( digitalRead(btnWabbit) == LOW ) {
+      debounce();
+      waitTime = 2000;
+      Wabbit();
+    }
+
+    /* Go to zero position for changing paper target image */
+    myservo1.write(90);                   // go to position
+    delay(1000);                          // wait to reach the position
+    myservo1.detach();                    // detach to allow manual movement
+
+    PORTB ^=(1 <<PB0);                    // toggle LED's during Pause
+    PORTB ^=(1 <<PB1);                    // D8 D9 are on PortB (≈UNO)
+    PORTD ^=(1 <<PD7);                    // D7 is on PortD  (≈UNO)
+                    /* LED's toggle alternately between current prgm and the rest */
+
+  }//end while
+}//end Paused sub
+// *************************************************************************************
