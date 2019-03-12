@@ -1,0 +1,13 @@
+The Code is posted for Arduino (tweak as needed for your UNO, Nano, Mega or Atmel Chips).Tweak the values to reflect your Target…
+
+Code has 4 routines:
+1. BullsEye (just goes back and forth to max/min position)
+2. Squirrel Taco (jumps around, unpredictably like a squirrel).
+3. You Dirty Wabbit (Honoring Elmer Fudd; jumps around like a Dirty Wabbit).
+
+Code/controller has a Speed Increase button and Reset button (when stopped, can manually swing Arm/Straw out of the way for access).
+
+Make some graphics or cut and paste whatever.
+The targets are taped to a Straw that’s set into a backing on target (see photo).
+
+I simply used a Box to frame the stuff (behind the cardboard is a Metal box rated for 22Cal - I shoot only pellets in basement).
